@@ -1,4 +1,4 @@
-# Kroki Encoder Decoer
+# Kroki Encoder Decoder
 
 This HTML file contains a JavaScript-based Kroki Encoder/Decoder. It allows users to encode and decode Kroki URLs back into code. The code runs entirely in the browser, with no backend required. 
 
