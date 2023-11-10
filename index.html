@@ -1,0 +1,81 @@
+<html>
+
+<head>
+    <title>Kroki - Encoder / Decoder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/pako@1.0.10/dist/pako.min.js"></script>
+    <script>
+
+        function decode() {
+            try {
+                let textToDecode = document.getElementById("inputtext").value
+                if (textToDecode.match(new RegExp("^https:\/\/kroki\.io\/plantuml\/svg\/[a-zA-Z-0-9_=]+"))) {
+                    textToDecode = textToDecode.replace("https://kroki.io/plantuml/svg/", "")
+                }
+
+                let result = decodeFromKroki(textToDecode)
+                result = result.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/\n/g, "<br />");
+                document.getElementById("resultshowarea").innerHTML = result;
+                document.getElementById("resultshowarea").style.display = "block";
+            } catch (e) {
+                console.error(e)
+                alert("Unable to decode text!")
+            }
+        }
+
+        function encode() {
+            try {
+                let textToEncode = document.getElementById("inputtext").value
+                let result = encodeToKroki(textToEncode)
+                document.getElementById("resultshowarea").innerHTML = result;
+                document.getElementById("resultshowarea").style.display = "block";
+            } catch (e) {
+                console.error(e)
+                alert("Unable to encode text!")
+            }
+        }
+
+        // Encodes a string to Kroki URL format.
+        function encodeToKroki(diagramSource) {
+            let data = utf8_encode(diagramSource)
+            let compressed = pako.deflate(data, { level: 9, to: 'string' })
+            return btoa(compressed).replace(/\+/g, '-').replace(/\//g, '_')
+        }
+
+        // Encodes a string to UTF8 Unit8Array.
+        function utf8_encode(str) {
+            if (window.TextEncoder) {
+                return new TextEncoder('utf-8').encode(str);
+            }
+            var utf8 = unescape(encodeURIComponent(str));
+            var result = new Uint8Array(utf8.length);
+            for (var i = 0; i < utf8.length; i++) {
+                result[i] = utf8.charCodeAt(i);
+            }
+            return result;
+        }
+
+        // Decodes a string from Kroki URL format.
+        function decodeFromKroki(diagramSource) {
+            let data = atob(diagramSource.replace(/-/g, '+').replace(/_/g, '/'))
+            return pako.inflate(data, { to: 'string' })
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Kroki Encoder / Decoder</h1>
+    <p>This snippet is designed to help you decode Kroki URLs back into code. It's fully JavaScript-based and runs entirely in your browser, with no backend required. For encoding and working with Kroki, we recommend using <a href="https://kroki.io/">https://kroki.io/</a>. Please note that this snippet may not function properly.</p>
+    <div>
+        <textarea style="width:100%;min-height:250px;" id="inputtext"
+            placeholder="Enter code to encode or decode as kroki url here..."></textarea>
+    </div>
+    <div style="border:1px solid black;border-radius:5px;background-color:lightgray;margin-top:25px;display:none;padding:10px;"
+        id="resultshowarea"></div>
+    <div style="text-align: center;margin-top:25px;">
+        <button style="min-width: 100px;" onclick="encode()">Encode</button>
+        <button style="min-width: 100px;" onclick="decode()">Decode</button>
+    </div>
+</body>
+
+</html>
